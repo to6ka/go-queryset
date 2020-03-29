@@ -1,4 +1,4 @@
-package: github.com/jirfag/go-queryset
+package: github.com/to6ka/go-queryset
 import:
 - package: github.com/jinzhu/gorm
   version: ~1.0.0

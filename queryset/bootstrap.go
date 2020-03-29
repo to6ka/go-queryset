@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jirfag/go-queryset/parser"
+	"github.com/to6ka/go-queryset/parser"
 	"golang.org/x/tools/go/loader"
 	"golang.org/x/tools/imports"
 )

@@ -37,7 +37,7 @@ func TestFileNameToPkgName(t *testing.T) {
 	_, selfFilePath, _, ok := runtime.Caller(0)
 	assert.True(t, ok)
 	assert.NotEmpty(t, selfFilePath)
-	selfPkg := "github.com/jirfag/go-queryset/parser"
+	selfPkg := "github.com/to6ka/go-queryset/parser"
 	if !strings.Contains(selfFilePath, selfPkg) {
 		t.Skipf("it's a forked repo %q, skip pkg path test", selfFilePath)
 	}

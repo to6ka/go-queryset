@@ -13,8 +13,8 @@ import (
 	"golang.org/x/tools/go/loader"
 
 	"github.com/jinzhu/gorm"
-	"github.com/jirfag/go-queryset/parser"
-	"github.com/jirfag/go-queryset/queryset/methods"
+	"github.com/to6ka/go-queryset/parser"
+	"github.com/to6ka/go-queryset/queryset/methods"
 )
 
 var qsTmpl = template.Must(

@@ -17,7 +17,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/jirfag/go-queryset/queryset/test"
+	"github.com/to6ka/go-queryset/queryset/test"
 	"github.com/stretchr/testify/assert"
 
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"

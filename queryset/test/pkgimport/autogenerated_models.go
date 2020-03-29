@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
-	forex "github.com/jirfag/go-queryset/queryset/test/pkgimport/forex/v1"
+	forex "github.com/to6ka/go-queryset/queryset/test/pkgimport/forex/v1"
 )
 
 // ===== BEGIN of all query sets
