@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 	"path"
 	"strings"
 
@@ -10,6 +11,8 @@ import (
 )
 
 func main() {
+	log.Fatal(os.Args)
+
 	inFile := flag.String("in", "models.go", "path to input file")
 	outFile := flag.String("out", "{in}_queryset.go", "path to output file")
 	flag.Parse()
