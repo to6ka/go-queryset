@@ -53,9 +53,9 @@ type dbArgMethod struct {
 	oneArgMethod
 }
 
-func newDbArgMethod() dbArgMethod {
+func newDbArgMethod(cfg Config) dbArgMethod {
 	return dbArgMethod{
-		oneArgMethod: newOneArgMethod("db", "*gorm.DB"),
+		oneArgMethod: newOneArgMethod("db", cfg.DBType),
 	}
 }
 

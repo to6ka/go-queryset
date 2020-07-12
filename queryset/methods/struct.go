@@ -9,10 +9,10 @@ type StructModifierMethod struct {
 }
 
 // NewStructModifierMethod create StructModifierMethod method
-func NewStructModifierMethod(name, structTypeName string) StructModifierMethod {
+func NewStructModifierMethod(name, structTypeName string, cfg Config) StructModifierMethod {
 	r := StructModifierMethod{
 		namedMethod:       newNamedMethod(name),
-		dbArgMethod:       newDbArgMethod(),
+		dbArgMethod:       newDbArgMethod(cfg),
 		structMethod:      newStructMethod("o", "*"+structTypeName),
 		gormErroredMethod: newGormErroredMethod(name, "o", "db"),
 	}

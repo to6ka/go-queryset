@@ -27,6 +27,7 @@ var qsTmpl = template.Must(
 )
 
 type querySetStructConfig struct {
+	DBType     string
 	StructName string
 	Name       string
 	Methods    methodsSlice
@@ -208,7 +209,7 @@ func getUpdaterMethods(fields []fieldInfo, structTypeName string) []methods.Meth
 	return ret
 }
 
-func getMethodsForStruct(structTypeName string, fieldInfos []fieldInfo) []methods.Method {
+func getMethodsForStruct(structTypeName string, fieldInfos []fieldInfo, cfg Config) []methods.Method {
 	qsTypeName := structTypeName + "QuerySet"
 
 	ret := []methods.Method{
@@ -217,8 +218,8 @@ func getMethodsForStruct(structTypeName string, fieldInfos []fieldInfo) []method
 		methods.NewOneMethod(structTypeName, qsTypeName),
 		methods.NewGetUpdaterMethod(qsTypeName, getUpdaterTypeName(structTypeName)),
 		methods.NewDeleteMethod(qsTypeName, structTypeName),
-		methods.NewStructModifierMethod("Create", structTypeName),
-		methods.NewStructModifierMethod("Delete", structTypeName),
+		methods.NewStructModifierMethod("Create", structTypeName, methods.Config{DBType: cfg.DBType}),
+		methods.NewStructModifierMethod("Delete", structTypeName, methods.Config{DBType: cfg.DBType}),
 		methods.NewCountMethod(qsTypeName),
 	}
 
@@ -248,8 +249,11 @@ func doesNeedToGenerateQuerySet(doc *ast.CommentGroup) bool {
 	return false
 }
 
-func generateQuerySetConfigs(pkgInfo *loader.PackageInfo,
-	structs parser.ParsedStructs) querySetStructConfigSlice {
+func generateQuerySetConfigs(
+	pkgInfo *loader.PackageInfo,
+	structs parser.ParsedStructs,
+	cfg Config,
+) querySetStructConfigSlice {
 
 	querySetStructConfigs := querySetStructConfigSlice{}
 
@@ -267,9 +271,10 @@ func generateQuerySetConfigs(pkgInfo *loader.PackageInfo,
 			fieldInfos = append(fieldInfos, *fi)
 		}
 
-		methods := getMethodsForStruct(structTypeName, fieldInfos)
+		methods := getMethodsForStruct(structTypeName, fieldInfos, cfg)
 
 		qsConfig := querySetStructConfig{
+			DBType:     cfg.DBType,
 			StructName: structTypeName,
 			Name:       structTypeName + "QuerySet",
 			Methods:    methods,
@@ -284,9 +289,12 @@ func generateQuerySetConfigs(pkgInfo *loader.PackageInfo,
 
 // GenerateQuerySetsForStructs is an internal method to retrieve querysets
 // generated code from parsed structs
-func GenerateQuerySetsForStructs(pkgInfo *loader.PackageInfo, structs parser.ParsedStructs) (io.Reader, error) {
-
-	querySetStructConfigs := generateQuerySetConfigs(pkgInfo, structs)
+func generateQuerySetsForStructs(
+	pkgInfo *loader.PackageInfo,
+	structs parser.ParsedStructs,
+	cfg Config,
+) (io.Reader, error) {
+	querySetStructConfigs := generateQuerySetConfigs(pkgInfo, structs, cfg)
 	if len(querySetStructConfigs) == 0 {
 		return nil, nil
 	}
@@ -315,21 +323,17 @@ const qsCode = `
 
 	// {{ .Name }} is an queryset type for {{ .StructName }}
 	type {{ .Name }} struct {
-		db *gorm.DB
+		db {{ .DBType }}
 	}
 
 	// New{{ .Name }} constructs new {{ .Name }}
-	func New{{ .Name }}(db *gorm.DB) {{ .Name }} {
+	func New{{ .Name }}(db {{ .DBType }}) {{ .Name }} {
 		return {{ .Name }}{
 			db: db.Model(&{{ .StructName }}{}),
 		}
 	}
 
-	func (qs {{ .Name }}) DB() *gorm.DB {
-		return qs.db
-	}
-
-	func (qs {{ .Name }}) w(db *gorm.DB) {{ .Name }} {
+	func (qs {{ .Name }}) w(db {{ .DBType }}) {{ .Name }} {
 		return New{{ .Name }}(db)
 	}
 
@@ -360,7 +364,7 @@ const qsCode = `
 	}
 
 	// Update updates {{ .StructName }} fields by primary key
-	func (o *{{ .StructName }}) Update(db *gorm.DB, fields ...{{ $ft }}) error {
+	func (o *{{ .StructName }}) Update(db {{ .DBType }}, fields ...{{ $ft }}) error {
 		dbNameToFieldName := map[string]interface{}{
 			{{- range .Fields }}
 				"{{ .Name | todbname }}": o.{{ .Name }},
@@ -386,11 +390,11 @@ const qsCode = `
 	// {{ .StructName }}Updater is an {{ .StructName }} updates manager
 	type {{ .StructName }}Updater struct {
 		fields map[string]interface{}
-		db *gorm.DB
+		db {{ .DBType }}
 	}
 
 	// New{{ .StructName }}Updater creates new {{ .StructName }} updater
-	func New{{ .StructName }}Updater(db *gorm.DB) {{ .StructName }}Updater {
+	func New{{ .StructName }}Updater(db {{ .DBType }}) {{ .StructName }}Updater {
 		return {{ .StructName }}Updater{
 			fields: map[string]interface{}{},
 			db: db.Model(&{{ .StructName }}{}),
