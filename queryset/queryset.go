@@ -311,33 +311,33 @@ const qsCode = `
 // ===== BEGIN of all query sets
 
 {{ range .Configs }}
-  // ===== BEGIN of query set {{ .Name }}
+	// ===== BEGIN of query set {{ .Name }}
 
 	// {{ .Name }} is an queryset type for {{ .StructName }}
-  type {{ .Name }} struct {
-	  db *gorm.DB
-  }
+	type {{ .Name }} struct {
+		db *gorm.DB
+	}
 
-  // New{{ .Name }} constructs new {{ .Name }}
-  func New{{ .Name }}(db *gorm.DB) {{ .Name }} {
-	  return {{ .Name }}{
-		  db: db.Model(&{{ .StructName }}{}),
-	  }
-  }
+	// New{{ .Name }} constructs new {{ .Name }}
+	func New{{ .Name }}(db *gorm.DB) {{ .Name }} {
+		return {{ .Name }}{
+			db: db.Model(&{{ .StructName }}{}),
+		}
+	}
 
 	func (qs {{ .Name }}) w(db *gorm.DB) {{ .Name }} {
-	  return New{{ .Name }}(db)
-  }
+		return New{{ .Name }}(db)
+	}
 
 	{{ range .Methods }}
 		{{ .GetDoc .GetMethodName }}
 		func ({{ .GetReceiverDeclaration }}) {{ .GetMethodName }}({{ .GetArgsDeclaration }})
 		{{- .GetReturnValuesDeclaration }} {
-      {{ .GetBody }}
+			{{ .GetBody }}
 		}
 	{{ end }}
 
-  // ===== END of query set {{ .Name }}
+	// ===== END of query set {{ .Name }}
 
 	// ===== BEGIN of {{ .StructName }} modifiers
 
