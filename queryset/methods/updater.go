@@ -1,9 +1,5 @@
 package methods
 
-import (
-	"strings"
-)
-
 // baseUpdaterMethod
 type baseUpdaterMethod struct {
 	structMethod
@@ -62,11 +58,11 @@ type UpdaterUpdateMethod struct {
 }
 
 // NewUpdaterUpdateMethod create new Update method
-func NewUpdaterUpdateMethod(updaterTypeName string) UpdaterUpdateMethod {
+func NewUpdaterUpdateMethod(updaterTypeName string, cfg Config) UpdaterUpdateMethod {
 	return UpdaterUpdateMethod{
 		namedMethod:       newNamedMethod("Update"),
 		baseUpdaterMethod: newBaseUpdaterMethod(updaterTypeName),
-		constBodyMethod:   newConstBodyMethod("return u.db.Updates(u.fields).Error"),
+		constBodyMethod:   newConstBodyMethod("return u.db.Updates(u.fields).%s", cfg.ErrorGet),
 	}
 }
 
@@ -80,16 +76,16 @@ type UpdaterUpdateNumMethod struct {
 }
 
 // NewUpdaterUpdateNumMethod creates new UpdateNum method
-func NewUpdaterUpdateNumMethod(updaterTypeName string) UpdaterUpdateNumMethod {
+func NewUpdaterUpdateNumMethod(updaterTypeName string, cfg Config) UpdaterUpdateNumMethod {
 	return UpdaterUpdateNumMethod{
 		namedMethod:       newNamedMethod("UpdateNum"),
 		baseUpdaterMethod: newBaseUpdaterMethod(updaterTypeName),
 		constRetMethod:    newConstRetMethod("(int64, error)"),
 		constBodyMethod: newConstBodyMethod(
-			strings.Join([]string{
-				"db := u.db.Updates(u.fields)",
-				"return db.RowsAffected, db.Error",
-			}, "\n"),
+			`db := u.db.Updates(u.fields)
+			return db.%s, db.%s`,
+			cfg.RowsAffectedGet,
+			cfg.ErrorGet,
 		),
 	}
 }

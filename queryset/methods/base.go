@@ -16,7 +16,9 @@ type Method interface {
 }
 
 type Config struct {
-	DBType string
+	DBType          string
+	ErrorGet        string
+	RowsAffectedGet string
 }
 
 // receiverMethod

@@ -9,10 +9,14 @@ import (
 	"strings"
 
 	"github.com/to6ka/go-queryset/queryset"
+	"github.com/to6ka/go-queryset/queryset/methods"
 )
 
-var paramOut = flag.String("out", "{in}_queryset.go", "path to output file")
-var paramDBType = flag.String("dbtype", "*github.com/jinzhu/gorm.DB", "db type to use for generation")
+var (
+	paramOut           = flag.String("out", "{in}_queryset.go", "path to output file")
+	paramDBType        = flag.String("dbtype", "*github.com/jinzhu/gorm.DB", "db type to use for generation")
+	paramUseGetMethods = flag.Bool("use_get_methods", false, "should goqueryset use methods instead of gorm fields")
+)
 
 func main() {
 	flag.Parse()
@@ -39,11 +43,27 @@ func main() {
 		log.Fatalf("file %s is not a regular file", inFile)
 	}
 
-	log.Printf("generating goqueryset in=%s out=%s dbtype=%s dbimport=%s", inFile, outFile, dbType, dbImport)
-	err = queryset.GenerateQuerySets(inFile, outFile, queryset.Config{
-		DBType:   dbType,
+	log.Printf("generating goqueryset in=%s out=%s dbtype=%s dbimport=%s use_get_methods=%t",
+		inFile, outFile, dbType, dbImport, *paramUseGetMethods)
+
+	cfg := queryset.Config{
 		DBImport: dbImport,
-	})
+	}
+	if *paramUseGetMethods {
+		cfg.Config = methods.Config{
+			DBType:          dbType,
+			ErrorGet:        "Err()",
+			RowsAffectedGet: "RowsAffected()",
+		}
+	} else {
+		cfg.Config = methods.Config{
+			DBType:          dbType,
+			ErrorGet:        "Error",
+			RowsAffectedGet: "RowsAffected",
+		}
+	}
+
+	err = queryset.GenerateQuerySets(inFile, outFile, cfg)
 	if err != nil {
 		log.Fatalf("can't generate query sets: %s", err)
 	}

@@ -61,17 +61,19 @@ func newDbArgMethod(cfg Config) dbArgMethod {
 
 // gormErroredMethod
 type gormErroredMethod struct {
+	Config
 	errorRetMethod
 	callGormMethod
 }
 
 // GetBody returns body of method
 func (m gormErroredMethod) GetBody() string {
-	return "return " + m.callGormMethod.GetBody() + ".Error"
+	return "return " + m.callGormMethod.GetBody() + "." + m.Config.ErrorGet
 }
 
-func newGormErroredMethod(name, args, varName string) gormErroredMethod {
+func newGormErroredMethod(name, args, varName string, cfg Config) gormErroredMethod {
 	return gormErroredMethod{
+		Config:         cfg,
 		callGormMethod: newCallGormMethod(name, args, varName),
 	}
 }

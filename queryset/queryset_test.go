@@ -18,6 +18,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/stretchr/testify/assert"
+	"github.com/to6ka/go-queryset/queryset/methods"
 	"github.com/to6ka/go-queryset/queryset/test"
 
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
@@ -306,8 +307,12 @@ func testUsersCount(t *testing.T, m sqlmock.Sqlmock, db *gorm.DB) {
 }
 
 var cfg = Config{
-	DBType:   "*gorm.DB",
 	DBImport: "github.com/jinzhu/gorm",
+	Config: methods.Config{
+		DBType:          "*gorm.DB",
+		ErrorGet:        "Error",
+		RowsAffectedGet: "RowsAffected",
+	},
 }
 
 func TestMain(m *testing.M) {

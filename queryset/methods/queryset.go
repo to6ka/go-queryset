@@ -273,12 +273,12 @@ type SelectMethod struct {
 	gormErroredMethod
 }
 
-func newSelectMethod(name, gormName, argTypeName, qsTypeName string) SelectMethod {
+func newSelectMethod(name, gormName, argTypeName, qsTypeName string, cfg Config) SelectMethod {
 	return SelectMethod{
 		namedMethod:        newNamedMethod(name),
 		baseQuerySetMethod: newBaseQuerySetMethod(qsTypeName),
 		oneArgMethod:       newOneArgMethod("ret", argTypeName),
-		gormErroredMethod:  newGormErroredMethod(gormName, "ret", qsDbName),
+		gormErroredMethod:  newGormErroredMethod(gormName, "ret", qsDbName, cfg),
 	}
 }
 
@@ -310,11 +310,11 @@ type DeleteMethod struct {
 }
 
 // NewDeleteMethod creates Delete method
-func NewDeleteMethod(qsTypeName, structTypeName string) DeleteMethod {
+func NewDeleteMethod(qsTypeName, structTypeName string, cfg Config) DeleteMethod {
 	return DeleteMethod{
 		baseQuerySetMethod: newBaseQuerySetMethod(qsTypeName),
 		namedMethod:        newNamedMethod("Delete"),
-		gormErroredMethod:  newGormErroredMethod("Delete", structTypeName+"{}", qsDbName),
+		gormErroredMethod:  newGormErroredMethod("Delete", structTypeName+"{}", qsDbName, cfg),
 	}
 }
 
@@ -328,14 +328,14 @@ type CountMethod struct {
 }
 
 // NewCountMethod returns new CountMethod
-func NewCountMethod(qsTypeName string) CountMethod {
+func NewCountMethod(qsTypeName string, cfg Config) CountMethod {
 	return CountMethod{
 		baseQuerySetMethod: newBaseQuerySetMethod(qsTypeName),
 		namedMethod:        newNamedMethod("Count"),
 		constRetMethod:     newConstRetMethod("(int, error)"),
 		constBodyMethod: newConstBodyMethod(`var count int
-			err := %s.Count(&count).Error
-			return count, err`, qsDbName),
+			err := %s.Count(&count).%s
+			return count, err`, qsDbName, cfg.ErrorGet),
 	}
 }
 
@@ -369,13 +369,13 @@ func NewLimitMethod(qsTypeName string) StructOperationOneArgMethod {
 }
 
 // NewAllMethod creates All method
-func NewAllMethod(structName, qsTypeName string) SelectMethod {
-	return newSelectMethod("All", "Find", fmt.Sprintf("*[]%s", structName), qsTypeName)
+func NewAllMethod(structName, qsTypeName string, cfg Config) SelectMethod {
+	return newSelectMethod("All", "Find", fmt.Sprintf("*[]%s", structName), qsTypeName, cfg)
 }
 
 // NewOneMethod creates One method
-func NewOneMethod(structName, qsTypeName string) SelectMethod {
-	r := newSelectMethod("One", "First", fmt.Sprintf("*%s", structName), qsTypeName)
+func NewOneMethod(structName, qsTypeName string, cfg Config) SelectMethod {
+	r := newSelectMethod("One", "First", fmt.Sprintf("*%s", structName), qsTypeName, cfg)
 	const doc = `// One is used to retrieve one result. It returns gorm.ErrRecordNotFound
 	// if nothing was fetched`
 	r.setDoc(doc)

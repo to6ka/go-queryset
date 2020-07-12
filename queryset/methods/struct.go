@@ -14,7 +14,7 @@ func NewStructModifierMethod(name, structTypeName string, cfg Config) StructModi
 		namedMethod:       newNamedMethod(name),
 		dbArgMethod:       newDbArgMethod(cfg),
 		structMethod:      newStructMethod("o", "*"+structTypeName),
-		gormErroredMethod: newGormErroredMethod(name, "o", "db"),
+		gormErroredMethod: newGormErroredMethod(name, "o", "db", cfg),
 	}
 	return r
 }

@@ -9,13 +9,14 @@ import (
 	"text/template"
 
 	"github.com/to6ka/go-queryset/parser"
+	"github.com/to6ka/go-queryset/queryset/methods"
 	"golang.org/x/tools/go/loader"
 	"golang.org/x/tools/imports"
 )
 
 type Config struct {
-	DBType   string
 	DBImport string
+	methods.Config
 }
 
 // GenerateQuerySets generates output file with querysets
@@ -74,6 +75,7 @@ func writeQuerySetsToOutput(r io.Reader, pkgInfo *loader.PackageInfo, outFile st
 	if _, err := io.Copy(&buf, r); err != nil {
 		return fmt.Errorf("can't write to buf: %s", err)
 	}
+	//log.Printf("output: %s", buf)
 
 	formattedRes, err := imports.Process(outFile, buf.Bytes(), nil)
 	if err != nil {

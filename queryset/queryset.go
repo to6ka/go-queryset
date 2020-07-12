@@ -28,6 +28,7 @@ var qsTmpl = template.Must(
 
 type querySetStructConfig struct {
 	DBType     string
+	ErrorGet   string
 	StructName string
 	Name       string
 	Methods    methodsSlice
@@ -190,11 +191,11 @@ func getUpdaterTypeName(structTypeName string) string {
 	return structTypeName + "Updater"
 }
 
-func getUpdaterMethods(fields []fieldInfo, structTypeName string) []methods.Method {
+func getUpdaterMethods(fields []fieldInfo, structTypeName string, cfg Config) []methods.Method {
 	updaterTypeName := getUpdaterTypeName(structTypeName)
 	ret := []methods.Method{
-		methods.NewUpdaterUpdateMethod(updaterTypeName),
-		methods.NewUpdaterUpdateNumMethod(updaterTypeName),
+		methods.NewUpdaterUpdateMethod(updaterTypeName, cfg.Config),
+		methods.NewUpdaterUpdateNumMethod(updaterTypeName, cfg.Config),
 	}
 	for _, f := range fields {
 		if f.isPointer {
@@ -214,19 +215,19 @@ func getMethodsForStruct(structTypeName string, fieldInfos []fieldInfo, cfg Conf
 
 	ret := []methods.Method{
 		methods.NewLimitMethod(qsTypeName),
-		methods.NewAllMethod(structTypeName, qsTypeName),
-		methods.NewOneMethod(structTypeName, qsTypeName),
+		methods.NewAllMethod(structTypeName, qsTypeName, cfg.Config),
+		methods.NewOneMethod(structTypeName, qsTypeName, cfg.Config),
 		methods.NewGetUpdaterMethod(qsTypeName, getUpdaterTypeName(structTypeName)),
-		methods.NewDeleteMethod(qsTypeName, structTypeName),
-		methods.NewStructModifierMethod("Create", structTypeName, methods.Config{DBType: cfg.DBType}),
-		methods.NewStructModifierMethod("Delete", structTypeName, methods.Config{DBType: cfg.DBType}),
-		methods.NewCountMethod(qsTypeName),
+		methods.NewDeleteMethod(qsTypeName, structTypeName, cfg.Config),
+		methods.NewStructModifierMethod("Create", structTypeName, cfg.Config),
+		methods.NewStructModifierMethod("Delete", structTypeName, cfg.Config),
+		methods.NewCountMethod(qsTypeName, cfg.Config),
 	}
 
 	fieldMethods := getQuerySetFieldMethods(fieldInfos, qsTypeName)
 	ret = append(ret, fieldMethods...)
 
-	ret = append(ret, getUpdaterMethods(fieldInfos, structTypeName)...)
+	ret = append(ret, getUpdaterMethods(fieldInfos, structTypeName, cfg)...)
 
 	return ret
 }
@@ -275,6 +276,7 @@ func generateQuerySetConfigs(
 
 		qsConfig := querySetStructConfig{
 			DBType:     cfg.DBType,
+			ErrorGet:   cfg.ErrorGet,
 			StructName: structTypeName,
 			Name:       structTypeName + "QuerySet",
 			Methods:    methods,
@@ -333,6 +335,10 @@ const qsCode = `
 		}
 	}
 
+	func (qs {{ .Name }}) DB() {{ .DBType }} {
+		return qs.db
+	}
+
 	func (qs {{ .Name }}) w(db {{ .DBType }}) {{ .Name }} {
 		return New{{ .Name }}(db)
 	}
@@ -375,7 +381,7 @@ const qsCode = `
 			fs := string(f)
 			u[fs] = dbNameToFieldName[fs]
 		}
-		if err := db.Model(o).Updates(u).Error; err != nil {
+		if err := db.Model(o).Updates(u).{{ .ErrorGet }}; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				return err
 			}
