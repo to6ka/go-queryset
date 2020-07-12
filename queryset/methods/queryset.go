@@ -111,10 +111,17 @@ func newFieldOperationNoArgsMethod(ctx QsFieldContext, transformFieldName bool) 
 	return r
 }
 
-// LowercaseFirstRune lowercases first rune of string
-func LowercaseFirstRune(s string) string {
+// LowerCaseFirstRune lowercases first rune of string
+func LowerCaseFirstRune(s string) string {
 	r := []rune(s)
 	r[0] = unicode.ToLower(r[0])
+	return string(r)
+}
+
+// upperCaseFirstRune uppercases first rune of string
+func upperCaseFirstRune(s string) string {
+	r := []rune(s)
+	r[0] = unicode.ToUpper(r[0])
 	return string(r)
 }
 
@@ -123,7 +130,7 @@ func fieldNameToArgName(fieldName string) string {
 		return fieldName
 	}
 
-	return LowercaseFirstRune(fieldName)
+	return "field" + upperCaseFirstRune(fieldName)
 }
 
 // StructOperationOneArgMethod is for struct operations with one arg

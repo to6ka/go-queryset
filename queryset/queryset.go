@@ -20,7 +20,7 @@ import (
 var qsTmpl = template.Must(
 	template.New("generator").
 		Funcs(template.FuncMap{
-			"lcf":      methods.LowercaseFirstRune,
+			"lcf":      methods.LowerCaseFirstRune,
 			"todbname": gorm.ToDBName,
 		}).
 		Parse(qsCode),
