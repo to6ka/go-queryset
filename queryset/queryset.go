@@ -325,6 +325,10 @@ const qsCode = `
 		}
 	}
 
+	func (qs {{ .Name }}) DB() *gorm.DB {
+		return qs.db
+	}
+
 	func (qs {{ .Name }}) w(db *gorm.DB) {{ .Name }} {
 		return New{{ .Name }}(db)
 	}
